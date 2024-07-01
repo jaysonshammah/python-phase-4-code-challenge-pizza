@@ -58,8 +58,7 @@ class TestApp:
             response = app.test_client().get('/restaurants/0')
             assert response.status_code == 404
             assert response.content_type == 'application/json'
-            assert response.json.get('error')
-            assert response.status_code == 404
+            assert response.json.get('error') == "Restaurant not found"
 
     def test_deletes_restaurant_by_id(self):
         '''deletes restaurant with DELETE request to /restaurants/<int:id>.'''
@@ -83,7 +82,7 @@ class TestApp:
         '''returns an error message and 404 status code with DELETE request to /restaurants/<int:id> by a non-existent ID.'''
 
         with app.app_context():
-            response = app.test_client().get('/restaurants/0')
+            response = app.test_client().delete('/restaurants/0')
             assert response.status_code == 404
             assert response.json.get('error') == "Restaurant not found"
 
@@ -124,7 +123,7 @@ class TestApp:
             db.session.add(restaurant)
             db.session.commit()
 
-            # delete if existing in case price differs
+            
             restaurant_pizza = RestaurantPizza.query.filter_by(
                 pizza_id=pizza.id, restaurant_id=restaurant.id).one_or_none()
             if restaurant_pizza:
@@ -165,7 +164,7 @@ class TestApp:
             db.session.add(restaurant)
             db.session.commit()
 
-            # price not in 1..30
+            
             response = app.test_client().post(
                 '/restaurant_pizzas',
                 json={
@@ -176,7 +175,7 @@ class TestApp:
             )
 
             assert response.status_code == 400
-            assert response.json['errors'] == ["validation errors"]
+            assert response.json['errors'] == ["Price must be between 1 and 30"]
 
             response = app.test_client().post(
                 '/restaurant_pizzas',
@@ -188,4 +187,4 @@ class TestApp:
             )
 
             assert response.status_code == 400
-            assert response.json['errors'] == ["validation errors"]
+            assert response.json['errors'] == ["Price must be between 1 and 30"]
